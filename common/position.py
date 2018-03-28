@@ -21,7 +21,6 @@ class Position(object):
             self.quantity = can_buy_quantity
             self.market_value = self.buy_price * self.quantity
             self.balance -= self.market_value
-            print('Trade pair: %s' % self.pair_name, flush=True)
             print('Buy at: %s' % self.buy_price, flush=True)
             self.show()
 
@@ -30,7 +29,6 @@ class Position(object):
         self.time = pair[2]
         if self.quantity != 0:
             self.market_value = self.sell_price * self.quantity 
-            print('Trade pair: %s' % self.pair_name, flush=True)
             print('Sell at: %s' % self.sell_price, flush=True)
             self.show()
             self.balance += self.market_value
