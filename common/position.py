@@ -29,7 +29,7 @@ class Position(object):
         if self.quantity != 0:
             self.market_value = self.sell_price * self.quantity 
             print('Sell at: %s' % self.sell_price)
-            self.show(time)
+            self.show()
             self.balance += self.market_value
             self.quantity = 0
             self.market_value = 0
