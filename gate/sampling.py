@@ -16,14 +16,15 @@ if __name__ == '__main__':
                 # Sometime fetch market data may fail
                 price_dict = gate_query.ticker(pair)
             except:
-                print('Warn: gate_query() return out of time.')
+                print('Warn: gate_query() return out of time.', flush=True)
                 continue
             if price_dict['result'] == 'true':
                 price_dict.pop('result')
                 db.insert(pair, price_dict)
-                print('Info: Insert latest price(%s) into db.' % price_dict['last'])
+                print('Info: Insert latest price(%s) into db.' % price_dict['last'], flush=True)
             else:
-                print('Error: Fetch real time price failed.')
+                print('Error: Fetch real time price failed.', flush=True)
+                break
         time.sleep(10)
     #print(db.query('eos_usdt', {'*':''}))
     #print(db.query('btm_usdt', {'*':''}))
