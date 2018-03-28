@@ -10,9 +10,11 @@ class Position(object):
         #self.pair_name = ''
         self.buy_price = 0
         self.sell_price = 0
+        self.time = None
 
-    def buy(self, price):
-        self.buy_price = price
+    def buy(self, pair):
+        self.buy_price = pair[1]
+        self.time = pair[2]
         can_buy_quantity = int(self.balance / self.buy_price)
         if can_buy_quantity != 0:
             self.quantity = can_buy_quantity
@@ -21,12 +23,13 @@ class Position(object):
             print('Buy at: %s' % self.buy_price)
             self.show()
 
-    def sell(self, price):
-        self.sell_price = price
+    def sell(self, pair):
+        self.sell_price = pair[1]
+        self.time = pair[2]
         if self.quantity != 0:
             self.market_value = self.sell_price * self.quantity 
             print('Sell at: %s' % self.sell_price)
-            self.show()
+            self.show(time)
             self.balance += self.market_value
             self.quantity = 0
             self.market_value = 0
@@ -36,6 +39,7 @@ class Position(object):
         print('Balance: %s' % self.balance)
         print('Market: %s' % self.market_value)
         print('Total: %s' % (self.balance + self.market_value))
+        print('Time: %s' % self.time)
         print('------------------------------')
 
     def ifStop(self):

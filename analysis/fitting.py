@@ -94,10 +94,10 @@ class MovePloyFit(object):
                             self.pre_status = check_point
                     if check_point[1] == 'Min':
                         # Min point find, Buy process
-                        self.pos.buy(pair[1])
+                        self.pos.buy(pair)
                     else:
                         # Max point find, Sell process
-                        self.pos.sell(pair[1])
+                        self.pos.sell(pair)
                 #poly.show()
                 self.x = self.x[self.step:]
                 self.y = self.y[self.step:]
@@ -116,7 +116,7 @@ class MovePloyFit(object):
         # call select every <xxx> second
         row_id = 0
         while(True):
-            sql = 'select rowid,last from %s where rowid > %s' % (trade_pair, row_id)
+            sql = 'select rowid,last,time from %s where rowid > %s' % (trade_pair, row_id)
             result = self.db.execute(sql)
             data = result.fetchall()
             self.execute(data)
