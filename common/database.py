@@ -53,6 +53,12 @@ if __name__ == '__main__':
     from common.environment import Env
     env = Env()
     db = Database(env)
-    sql = 'select rowid,last from eos_usdt order by rowid desc limit 900'
+    sql = 'select rowid,last from eos_usdt where rowid > 30'
     result = db.execute(sql)
-    print(result.fetchall())
+    data = result.fetchall()
+    print(data)
+    pair = data[-1]
+    print(pair)
+    row_id = pair[0]
+    print(row_id)
+    

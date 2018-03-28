@@ -114,11 +114,14 @@ class MovePloyFit(object):
 
     def realtime(self, trade_pair='eos_usdt'):
         # call select every <xxx> second
-        sql = 'select rowid,last from %s order by rowid desc limit %s' % (trade_pair, self.window_size)
+        row_id = 0
         while(True):
+            sql = 'select rowid,last from %s where rowid > %s' % (trade_pair, row_id)
             result = self.db.execute(sql)
             data = result.fetchall()
             self.execute(data)
+            last_pair = data[-1]
+            row_id = last_pair[0]
             if self.pos.ifStop():
                 break
             # Waitting for next loop
