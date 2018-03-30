@@ -19,8 +19,9 @@ class Position(object):
         can_buy_quantity = int(self.balance / self.buy_price)
         if can_buy_quantity != 0:
             self.quantity += can_buy_quantity
-            self.market_value += self.buy_price * can_buy_quantity
-            self.balance -= self.buy_price * can_buy_quantity
+            new_market_value = self.buy_price * can_buy_quantity
+            self.market_value += new_market_value
+            self.balance -= new_market_value * (1 + 0.002)
             print('Buy at: %s' % self.buy_price)
             self.show()
 
@@ -31,7 +32,7 @@ class Position(object):
             self.market_value = self.sell_price * self.quantity 
             print('Sell at: %s' % self.sell_price, flush=True)
             self.show()
-            self.balance += self.market_value
+            self.balance += self.market_value * (1 - 0.002)
             self.quantity = 0
             self.market_value = 0
 
