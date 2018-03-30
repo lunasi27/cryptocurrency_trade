@@ -98,12 +98,12 @@ class MovePloyFit(object):
                         # Only buy when more than 40% points smaller than predict
                         if self.belowCheck(poly.poly1d) < 0.4:
                             # Min point find, Buy process
-                            self.pos.buy(pair)
+                            pos.buy(pair)
                     else:
                         # Only sell when more than 70% points samller than predict
                         if self.belowCheck(poly.poly1d) > 0.7:
                             # Max point find, Sell process
-                            self.pos.sell(pair)
+                            pos.sell(pair)
                 #poly.show()
                 self.x = self.x[self.step:]
                 self.y = self.y[self.step:]
@@ -128,9 +128,9 @@ class MovePloyFit(object):
     def regression(self, trade_pair='eos_usdt'):
         pos = self.setupPosition(trade_pair)
         sql = 'select rowid,last,time from %s' % trade_pair
-        result = self.db.execute(sql, pos)
+        result = self.db.execute(sql)
         data = result.fetchall()
-        self.execute(data)
+        self.execute(data, pos)
         pos.show()
 
     def realtime(self, trade_pair='eos_usdt'):
