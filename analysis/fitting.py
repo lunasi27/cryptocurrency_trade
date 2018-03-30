@@ -70,12 +70,13 @@ class MovePloyFit(object):
         self.window_size = window_size
         self.step = step
         self.pre_status = (1,'Max')
-        self.pos = Position()
-        self.pos.show()
         self.x = []
         self.y = []
 
-    def execute(self, data):
+    def setupPosition(self, pair):
+        return Position(pair)
+
+    def execute(self, data, pos):
         for pair in data:
             # Check if begin analysis
             if len(self.x) == self.window_size:
@@ -125,23 +126,26 @@ class MovePloyFit(object):
         # Sell 70%, buy 40%
 
     def regression(self, trade_pair='eos_usdt'):
+        pos = self.setupPosition(trade_pair)
         sql = 'select rowid,last,time from %s' % trade_pair
-        result = self.db.execute(sql)
+        result = self.db.execute(sql, pos)
         data = result.fetchall()
         self.execute(data)
-        self.pos.show()
+        pos.show()
 
     def realtime(self, trade_pair='eos_usdt'):
+        pos = self.setupPosition(trade_pair)
+        pos.show()
         # call select every <xxx> second
         row_id = 0
         while(True):
             sql = 'select rowid,last,time from %s where rowid > %s' % (trade_pair, row_id)
             result = self.db.execute(sql)
             data = result.fetchall()
-            self.execute(data)
+            self.execute(data, pos)
             last_pair = data[-1]
             row_id = last_pair[0]
-            if self.pos.ifStop():
+            if pos.ifStop():
                 break
             # Waitting for next loop
             time.sleep(self.step * 10)

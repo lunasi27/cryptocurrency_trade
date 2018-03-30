@@ -3,7 +3,8 @@ from common.singleton import Singleton
 
 class Position(object):
     __metaclass__ = Singleton
-    def __init__(self):
+    def __init__(self, pair_name):
+        self.pair_name = pair_name
         self.market_value = 0
         self.balance = 100
         self.quantity = 0
@@ -28,19 +29,20 @@ class Position(object):
         self.time = pair[2]
         if self.quantity != 0:
             self.market_value = self.sell_price * self.quantity 
-            print('Sell at: %s' % self.sell_price)
+            print('Sell at: %s' % self.sell_price, flush=True)
             self.show()
             self.balance += self.market_value
             self.quantity = 0
             self.market_value = 0
 
     def show(self):
-        print('Quantity: %s' % self.quantity)
-        print('Balance: %s' % self.balance)
-        print('Market: %s' % self.market_value)
-        print('Total: %s' % (self.balance + self.market_value))
-        print('Time: %s' % self.time)
-        print('------------------------------')
+        print('Trade pair: %s' % self.pair_name, flush=True)
+        print('Quantity: %s' % self.quantity, flush=True)
+        print('Balance: %s' % self.balance, flush=True)
+        print('Market: %s' % self.market_value, flush=True)
+        print('Total: %s' % (self.balance + self.market_value), flush=True)
+        print('Time: %s' % self.time, flush=True)
+        print('------------------------------', flush=True)
 
     def ifStop(self):
         diff = self.balance + self.market_value - 100
