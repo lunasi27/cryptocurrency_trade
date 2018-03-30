@@ -1,7 +1,7 @@
 
 from common.database import Database
 from common.position import Position
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import time
 import pdb
@@ -26,6 +26,7 @@ class Polynomial(object):
     def fit(self):
         poly_expression = np.polyfit(self.x, self.y, self.degree)
         self.poly1d = np.poly1d(poly_expression)
+#        print(self.poly1d)
         self.df_1 = np.poly1d.deriv(self.poly1d)
         self.df_2 = np.poly1d.deriv(self.df_1)
 
@@ -93,17 +94,35 @@ class MovePloyFit(object):
                             self.y = self.y[self.pre_status[0]:]
                             self.pre_status = check_point
                     if check_point[1] == 'Min':
-                        # Min point find, Buy process
-                        self.pos.buy(pair)
+                        # Only buy when more than 40% points smaller than predict
+                        if self.belowCheck(poly.poly1d) < 0.4:
+                            # Min point find, Buy process
+                            self.pos.buy(pair)
                     else:
-                        # Max point find, Sell process
-                        self.pos.sell(pair)
+                        # Only sell when more than 70% points samller than predict
+                        if self.belowCheck(poly.poly1d) > 0.7:
+                            # Max point find, Sell process
+                            self.pos.sell(pair)
                 #poly.show()
                 self.x = self.x[self.step:]
                 self.y = self.y[self.step:]
             # Just fill x,y list
             self.x.append(pair[0])
             self.y.append(pair[1])
+
+    def belowCheck(self, poly1d):
+        count = 0
+        window_size = len(self.x)
+        statistic_range = int(window_size / 6)
+        for index in range(statistic_range):
+            x = self.x[window_size - index - 1]
+            y = self.y[window_size - index - 1]
+            pred_y = poly1d(x)
+            if y < pred_y:
+                count += 1
+#        print('small rate: %s' % (count / window * 100))
+        return count / statistic_range
+        # Sell 70%, buy 40%
 
     def regression(self, trade_pair='eos_usdt'):
         sql = 'select rowid,last,time from %s' % trade_pair

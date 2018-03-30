@@ -17,9 +17,9 @@ class Position(object):
         self.time = pair[2]
         can_buy_quantity = int(self.balance / self.buy_price)
         if can_buy_quantity != 0:
-            self.quantity = can_buy_quantity
-            self.market_value = self.buy_price * self.quantity
-            self.balance -= self.market_value
+            self.quantity += can_buy_quantity
+            self.market_value += self.buy_price * can_buy_quantity
+            self.balance -= self.buy_price * can_buy_quantity
             print('Buy at: %s' % self.buy_price)
             self.show()
 
