@@ -1,8 +1,9 @@
 
 from common.database import Database
 from common.position import Position
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
+import scipy as sp
 import time
 import pdb
 
@@ -26,9 +27,20 @@ class Polynomial(object):
     def fit(self):
         poly_expression = np.polyfit(self.x, self.y, self.degree)
         self.poly1d = np.poly1d(poly_expression)
-#        print(self.poly1d)
+        self.y_predit = self.poly1d(self.x)
+        #print(self.poly1d)
+        #print('rmse=%s' % self.rmse())
+        #print('R2=%s' % self.r2())
         self.df_1 = np.poly1d.deriv(self.poly1d)
         self.df_2 = np.poly1d.deriv(self.df_1)
+
+    # Root mean squared error
+    def rmse(self):
+        return sp.sqrt(sp.mean((self.y_predit - self.y) ** 2))
+
+    # Degree of excellence, 1 for best, 0 for worst
+    def r2(self):
+        return 1 - ((self.y_predit - self.y) ** 2).sum() / ((self.y - self.y.mean()) ** 2).sum() 
 
     def maxOrMin(self):
         # First derivative
@@ -72,6 +84,7 @@ class MovePloyFit(object):
         self.pre_status = (1,'Max')
         self.x = []
         self.y = []
+        self.r2_array = np.array([])
 
     def setupPosition(self, pair):
         return Position(pair)
@@ -82,28 +95,53 @@ class MovePloyFit(object):
             if len(self.x) == self.window_size:
                 poly = Polynomial(self.x, self.y)
                 poly.fit()
+                # Evaluation of fitting effect
+                self.r2_array = np.append(self.r2_array, poly.r2())
+                if self.r2_array.size > 10:
+                    self.r2_array = np.delete(self.r2_array, 0)
                 #print('x=%s, y=%s' % (self.x[-1], self.y[-1]))
                 check_point = poly.maxOrMin()
                 # Find min/max point
                 if check_point:
                     # Current extremum status != previous extremum status
                     if check_point[1] != self.pre_status[1]:
+                        # Curves and convexity changes, then clean the r2 array
+#                        self.r2_array = np.array([])
                         # Previous fit center point must samller than right side of window
                         if self.pre_status[0] < self.x[-1]:
                             # Trend change, remove pre_fit half curve
-                            self.x = self.x[self.pre_status[0]:]
-                            self.y = self.y[self.pre_status[0]:]
+                            self.x = [x for x in self.x if x > self.pre_status[0]]
+                            self.y = self.y[self.window_size-len(self.x):]
                             self.pre_status = check_point
+                    # Middle of the window
+                    mid =  int(len(self.x) / 2)
+#                    print('R2=%s' % self.r2_array.mean())
                     if check_point[1] == 'Min':
                         # Only buy when more than 40% points smaller than predict
-                        if self.belowCheck(poly.poly1d) < 0.4:
+#                        if self.r2_array.mean() >= 0.7:
                             # Min point find, Buy process
+#                        pos.buy(pair)
+                        if check_point[0] > self.x[mid] and self.r2_array.mean() > 0.85:
                             pos.buy(pair)
-                    else:
-                        # Only sell when more than 70% points samller than predict
-                        if self.belowCheck(poly.poly1d) > 0.7:
-                            # Max point find, Sell process
+#                            pos.sell(pair)
+                        # When Symmetric axis has moved into window, we find the curve fit very well
+                        # Then we can lock margin
+                        if check_point[0] < self.x[mid] and self.r2_array.mean() > 0.85:
                             pos.sell(pair)
+                            self.x = []
+                            self.y = []
+                            self.r2_array = np.array([])
+                    else:
+                        # Curve has changed, so just sell it.
+                        if check_point[0] > self.x[mid]:
+                            pos.sell(pair)
+                        # Only sell when more than 70% points samller than predict
+                        if check_point[0] < self.x[mid] and self.r2_array.mean() > 0.85:
+                            # Max point find, Sell process
+                            pos.buy(pair)
+                            self.x = []
+                            self.y = []
+                            self.r2_array = np.array([])
                 #poly.show()
                 self.x = self.x[self.step:]
                 self.y = self.y[self.step:]
@@ -111,19 +149,6 @@ class MovePloyFit(object):
             self.x.append(pair[0])
             self.y.append(pair[1])
 
-    def belowCheck(self, poly1d):
-        count = 0
-        window_size = len(self.x)
-        statistic_range = int(window_size / 6)
-        for index in range(statistic_range):
-            x = self.x[window_size - index - 1]
-            y = self.y[window_size - index - 1]
-            pred_y = poly1d(x)
-            if y < pred_y:
-                count += 1
-#        print('small rate: %s' % (count / window * 100))
-        return count / statistic_range
-        # Sell 70%, buy 40%
 
     def regression(self, trade_pair='eos_usdt'):
         pos = self.setupPosition(trade_pair)
