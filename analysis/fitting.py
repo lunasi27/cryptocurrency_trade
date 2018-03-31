@@ -53,27 +53,14 @@ class Polynomial(object):
             print('Image root has found.') 
             return False
         # Only take care about min/max point bigger window
-        if latest_solution >= self.x[0]:
-            # Second derivative
-            df_2 = np.poly1d.deriv(self.df_1)
-            if df_2(latest_solution) == 0:
-                # How to deal with stop point(Second derivative = 0)?
-                print('Second derivative == 0.') 
-                return False
-            elif df_2(latest_solution) > 0:
-                # Second derivative >0 means min point of original curve
-                #print('(%s, Min)' % latest_solution)
-                # Only pickup min point which bigger than max x of window
-                return latest_solution, 'Min'
-            else:
-                # Second derivative <0 means max point of original curve
-                #print('(%s, Max)' % latest_solution)
-                # Only pickup max point which smaller than min x of window
-                return latest_solution, 'Max'
-        else:
-            #print('Root out of range. %s' % latest_solution) 
+        df_2 = np.poly1d.deriv(self.df_1)
+        if df_2(latest_solution) == 0:
+            print('Second derivative == 0.')
             return False
-        
+        elif df_2(latest_solution) > 0:
+            return latest_solution, 'Min'
+        else:
+            return latest_solution, 'Max'
 
 class MovePloyFit(object):
     def __init__(self, env, window_size=90, step=1):
@@ -105,8 +92,6 @@ class MovePloyFit(object):
                 if check_point:
                     # Current extremum status != previous extremum status
                     if check_point[1] != self.pre_status[1]:
-                        # Curves and convexity changes, then clean the r2 array
-#                        self.r2_array = np.array([])
                         # Previous fit center point must samller than right side of window
                         if self.pre_status[0] < self.x[-1]:
                             # Trend change, remove pre_fit half curve
@@ -115,15 +100,13 @@ class MovePloyFit(object):
                             self.pre_status = check_point
                     # Middle of the window
                     mid =  int(len(self.x) / 2)
-#                    print('R2=%s' % self.r2_array.mean())
+                    #print('R2=%s' % self.r2_array.mean())
+                    #print('check_point=%s' % check_point[0])
                     if check_point[1] == 'Min':
                         # Only buy when more than 40% points smaller than predict
-#                        if self.r2_array.mean() >= 0.7:
-                            # Min point find, Buy process
-#                        pos.buy(pair)
+                        # Min point find, Buy process
                         if check_point[0] > self.x[mid] and self.r2_array.mean() > 0.85:
                             pos.buy(pair)
-#                            pos.sell(pair)
                         # When Symmetric axis has moved into window, we find the curve fit very well
                         # Then we can lock margin
                         if check_point[0] < self.x[mid] and self.r2_array.mean() > 0.85:
@@ -134,6 +117,7 @@ class MovePloyFit(object):
                     else:
                         # Curve has changed, so just sell it.
                         if check_point[0] > self.x[mid]:
+                        #if check_point[0] > self.x[mid] and check_point[0] < self.x[-1]:
                             pos.sell(pair)
                         # Only sell when more than 70% points samller than predict
                         if check_point[0] < self.x[mid] and self.r2_array.mean() > 0.85:
