@@ -21,6 +21,6 @@ if __name__ == '__main__':
        ticker_pairs = gate_query.pairs()
        for pair in ticker_pairs:
            ticker_field_dict['time'] = "TimeStamp  NOT NULL  DEFAULT (datetime('now','localtime'))"
-           print('Create table for %s' % pair)
+           print('Create table for %s' % pair, flush=True)
            db.createTable(pair, ticker_field_dict)
-       print('Total pairs: %s' % len(ticker_pairs))
+       print('Total pairs: %s' % len(ticker_pairs), flush=True)

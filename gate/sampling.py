@@ -25,8 +25,8 @@ if __name__ == '__main__':
             else:
                 print('Error: Fetch %s price failed, ignore it.' % ticker_pair, flush=True)
                 continue
-            print('Insert new price (%s) of %s' % (price_dict['last'], ticker_pair))
+            print('Insert new price (%s) of %s' % (price_dict['last'], ticker_pair), flush=True)
             db.insert(ticker_pair, price_dict)
-        print('Total insert pairs: %s' % len(tickers_price_dict))
+        print('Total insert pairs: %s' % len(tickers_price_dict), flush=True)
         # Take sample from market every 10 second
         time.sleep(10)
