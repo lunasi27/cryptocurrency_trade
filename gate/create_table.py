@@ -23,3 +23,4 @@ if __name__ == '__main__':
            ticker_field_dict['time'] = "TimeStamp  NOT NULL  DEFAULT (datetime('now','localtime'))"
            print('Create table for %s' % pair)
            db.createTable(pair, ticker_field_dict)
+       print('Total pairs: %s' % len(ticker_pairs))
