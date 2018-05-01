@@ -1,5 +1,6 @@
 from common.database import Database
 from common.environment import Env
+from gate.gate_api import GateIO
 
 ticker_field_dict = {'baseVolume':    'REAL', 
                      'high24hr':      'REAL', 
@@ -14,6 +15,10 @@ ticker_field_dict = {'baseVolume':    'REAL',
 if __name__ == '__main__':
        env = Env()
        db = Database(env)
-       for pair in env.config.common.trade_pairs:
+       gate_query = GateIO(env.config.gate.api_query_url,
+                           env.config.gate.api_key,
+                           env.config.gate.scret_key)
+       ticker_pairs = gate_query.pairs()
+       for pair in ticker_pairs:
            ticker_field_dict['time'] = "TimeStamp  NOT NULL  DEFAULT (datetime('now','localtime'))"
            db.createTable(pair, ticker_field_dict)
