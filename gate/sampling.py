@@ -14,19 +14,23 @@ if __name__ == '__main__':
         try:
             # Sometime fetch market data may fail
             tickers_price_dict = gate_query.tickers()
+            if type(tickers_price_dict) is not dict:
+                print('Not get dict:')
+                print(tickers_price_dict)
+                continue
         except:
             print('Warn: gate_query(tickers) return out of time.', flush=True)
             continue
         # Process ticker pairs
-        for ticker_pair,price_dict  in tickers_price_dict.items():
+        for ticker_pair,price_dict in tickers_price_dict.items():
             # Process here
             if price_dict['result'] == 'true':
                 price_dict.pop('result')
             else:
                 print('Error: Fetch %s price failed, ignore it.' % ticker_pair, flush=True)
                 continue
-            print('Insert new price (%s) of %s' % (price_dict['last'], ticker_pair), flush=True)
+            #print('Insert new price (%s) of %s' % (price_dict['last'], ticker_pair), flush=True)
             db.insert(ticker_pair, price_dict)
-        print('Total insert pairs: %s' % len(tickers_price_dict), flush=True)
+        #print('Total insert pairs: %s' % len(tickers_price_dict), flush=True)
         # Take sample from market every 10 second
         time.sleep(10)
