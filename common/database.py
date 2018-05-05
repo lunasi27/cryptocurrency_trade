@@ -39,7 +39,7 @@ class Database(object):
     def insert(self, table_name, field_dict):
         (field_name, field_value) = dict2Str2(field_dict)
         sql = 'insert into %s (%s) values (%s)' % (table_name, field_name, field_value)
-        print(sql, flush=True)
+        #print(sql, flush=True)
         self.cursor.execute(sql)
         self.conn.commit()
 
