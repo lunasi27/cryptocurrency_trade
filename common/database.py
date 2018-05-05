@@ -39,12 +39,18 @@ class Database(object):
     def insert(self, table_name, field_dict):
         (field_name, field_value) = dict2Str2(field_dict)
         sql = 'insert into %s (%s) values (%s)' % (table_name, field_name, field_value)
+        print(sql, flush=True)
         self.cursor.execute(sql)
         self.conn.commit()
 
     def query(self, table_name, field_dict):
         (field_name, _) = dict2Str2(field_dict)
         sql = 'select %s from %s' % (field_name, table_name)
+        result = self.cursor.execute(sql)
+        return result.fetchall()
+
+    def getAllTables(self):
+        sql = "select name from sqlite_master where type='table' order by name"
         result = self.cursor.execute(sql)
         return result.fetchall()
 
