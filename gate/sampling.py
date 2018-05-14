@@ -1,5 +1,5 @@
 from common.environment import Env
-from gate.database import GateDb
+from gate.gate_db import Ticker
 from gate.gate_api import GateIO
 import time
 import pdb
@@ -8,7 +8,6 @@ import pdb
 class Sampling(object):
     def __init__(self):
         env = Env()
-        self.db = GateDb(env)
         self.gate_query = GateIO(env.config.gate.api_query_url,
                                  env.config.gate.api_key,
                                  env.config.gate.scret_key)
@@ -20,12 +19,6 @@ class Sampling(object):
             return False
         return True
 
-    def check4NewPairs(self):
-        db_pair_list = self.db.getAllTables()
-        diff_pair_list = [p for p in self.tickers_price.keys() if p not in db_pair_list]
-        if len(diff_pair_list) > 0:
-            self.db.createTbForNewPairs(diff_pair_list)
-
     def saveTickerPairs(self):
         for ticker_pair,price_dict in self.tickers_price.items():
             if price_dict['result'] == 'true':
@@ -34,8 +27,21 @@ class Sampling(object):
                 print('WARN: Fetch %s failed, ignore it ...' % ticker_pair, flush=True)
                 continue
             if self.isValidValue(price_dict):
-                self.db.insert(ticker_pair, price_dict)
+                price_dict = {x:float(y) for x,y in price_dict.items()}
+                self.insertIntoDb(ticker_pair, price_dict)
 
+    def insertIntoDb(self, ticker_pair, price_dict):
+        tk = Ticker()
+        tk.pair = ticker_pair
+        tk.baseVolume = price_dict['baseVolume']
+        tk.high24hr = price_dict['high24hr']
+        tk.highestBid = price_dict['highestBid']
+        tk.last = price_dict['last']
+        tk.low24hr = price_dict['low24hr']
+        tk.lowestAsk = price_dict['lowestAsk']
+        tk.percentChange = price_dict['percentChange']
+        tk.quoteVolume = price_dict['quoteVolume']
+        tk.save_if_need()
 
     def isValidValue(self, price_dict):
         if None in price_dict.values():
@@ -55,7 +61,7 @@ class Sampling(object):
                 time.sleep(10)
                 continue
             # Check if there are new pairs
-            self.check4NewPairs()
+            #self.check4NewPairs()
             # Process ticker pairs
             self.saveTickerPairs()
             # show take sample time stamp
